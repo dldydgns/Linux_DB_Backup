@@ -1,6 +1,6 @@
 # [Linux Server] MySQL Dump & Scheduled Backup
 
-> Ubuntu 환경에서 **mysqldump + cron + tar**로 DB를 주기적으로 백업하고, 디렉토리 구조/권한/옵션/오류 대응까지 정리한 자동화 구성을 구축했습니다.
+> Ubuntu 환경에서 **mysqldump + cron + tar**로 DB를 주기적으로 백업하고, **자동화** 구성을 구축
 
 ### 주요 특징
 
@@ -32,11 +32,11 @@
 | ------------- | --------------------------------- |
 | **MySQL 8**   | `company` DB (테이블: `dept`, `emp`) |
 | **mysqldump** | 논리 백업 생성                          |
+| **~/.my.cnf** | DB 인증정보 분리(보안)                    |
 | **cron**      | 3분마다 자동 실행                        |
 | **tar**       | 덤프 파일 압축 보관                       |
-| **~/.my.cnf** | DB 인증정보 분리(보안)                    |
 
-**작업 디렉토리:** `~/03.sh/03-1.mysql_dump_pjt`
+
 
 ---
 
@@ -104,8 +104,8 @@ ON DUPLICATE KEY UPDATE
 ```ini
 # /home/ubuntu/.my.cnf
 [client]
-user=ubuntu
-password=ubuntu
+user=xxx(아이디)
+password=xxx{비밀번호)
 ```
 
 ```bash
@@ -119,7 +119,7 @@ chmod 600 ~/.my.cnf
 **파일:** <a href="https://github.com/dldydgns/Linux_DB_Backup/blob/main/backup_company.sh">backup_company.sh</a>
 
 ```bash
-chmod 750 ~/03.sh/03-1.mysql_dump_pjt/backup_company.sh
+chmod 750 ~/{파일경로}/backup_company.sh
 ```
 
 ---
@@ -132,35 +132,35 @@ chmod 750 ~/03.sh/03-1.mysql_dump_pjt/backup_company.sh
 crontab -e
 ```
 
-아래 줄 추가:
+아래 줄 추가
 
 ```
-*/3 * * * * /home/ubuntu/03.sh/03-1.mysql_dump_pjt/backup_company.sh
+*/3 * * * * /home/ubuntu/{파일경로}/backup_company.sh
 ```
 
-> **참고**: cron은 제한된 PATH로 실행됩니다. **절대경로**를 쓰고, `~` 대신 `/home/ubuntu`를 명시하세요.
+> **참고**: cron은 제한된 PATH로 실행. **절대경로**를 쓰고, `~` 대신 `/home/ubuntu`를 명시.
 
 ---
 
 ## 결과
 
-- 예시 백업 파일:
+- 예시 백업 파일
   
   ```
-  ~/03.sh/03-1.mysql_dump_pjt/backups/company_20250908-1536.tar.gz
+  ~/{파일경로}/backups/company_20250908-1536.tar.gz
   ```
 
-- 로그:
+- 로그
   
   ```
-  ~/03.sh/03-1.mysql_dump_pjt/logs/backup.log
-  [2025-09-08 15:36:03] backup OK -> /home/ubuntu/03.sh/03-1.mysql_dump_pjt/backups/company_20250908-1536.tar.gz
+  ~/{파일경로}/logs/backup.log
+  [2025-09-08 15:36:03] backup OK -> /home/ubuntu/{파일경로}/backups/company_20250908-1536.tar.gz
   ```
 
-- tar 확인(압축 해제 없이 목록만):
+- tar 확인(압축 해제 없이 목록만)
   
   ```bash
-  tar -tzf ~/03.sh/03-1.mysql_dump_pjt/backups/company_20250908-1536.tar.gz | head
+  tar -tzf ~/{파일경로}/backups/company_20250908-1536.tar.gz | head
   ```
 
 ---
@@ -174,13 +174,12 @@ crontab -e
 - **해결:** 스크립트에 `--no-tablespaces` 추가  
   (대안: 관리자가 `GRANT PROCESS ON *.*` 부여하되 보안상 비추천)
 
-- **예방:** MySQL 8 환경 백업 스크립트에는 **항상** `--no-tablespaces` 고려
 
 ### 2) cron에서 실행 안 됨
 
 - **원인:** PATH/권한/절대경로 문제
 
-- **점검:** `chmod +x backup_company.sh`, 절대경로 사용, `mail`/`/var/log/syslog`에서 CRON 로그 확인
+- **해결:** `chmod +x backup_company.sh`, 절대경로 사용, `mail`/`/var/log/syslog`에서 CRON 로그 확인
   
   ```bash
   grep CRON /var/log/syslog | tail
@@ -190,15 +189,10 @@ crontab -e
 
 - **원인:** `~/.my.cnf` 권한/소유자 문제 또는 루트로 실행
 
-- **조치:** `chmod 600 ~/.my.cnf`, 루트가 아니라 **ubuntu** 사용자로 실행하거나 루트의 `/root/.my.cnf`도 별도 구성
+- **해결:** `chmod 600 ~/.my.cnf`, 루트가 아니라 **ubuntu** 사용자로 실행하거나 루트의 `/root/.my.cnf`도 별도 구성
 
 ### 4) 보관 용량 증가
 
-- **대응:** 스크립트 말미의 `find ... -mtime +7 -delete`로 보관주기 관리(원하는 기간으로 조정)
+- **해결:** 스크립트 말미의 `find ... -mtime +7 -delete`로 보관주기 관리(원하는 기간으로 조정)
 
----
 
-## 한 줄 요약
-
-**3분마다 안전하게 동작하는 MySQL 자동 백업**을 구현했습니다.  
-MySQL 8 권한 이슈를 우회하는 옵션 세트를 적용하고, 보관·로그·보안까지 운영 관점에서 정리했습니다.
