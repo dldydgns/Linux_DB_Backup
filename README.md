@@ -179,7 +179,7 @@ crontab -e
 
 - **원인:** PATH/권한/절대경로 문제
 
-- **해결:** `chmod +x backup_company.sh`, 절대경로 사용, `mail`/`/var/log/syslog`에서 CRON 로그 확인
+- **해결:** `chmod +x backup_company.sh`, 절대경로 사용
   
   ```bash
   grep CRON /var/log/syslog | tail
@@ -189,7 +189,7 @@ crontab -e
 
 - **원인:** `~/.my.cnf` 권한/소유자 문제 또는 루트로 실행
 
-- **해결:** `chmod 600 ~/.my.cnf`, 루트가 아니라 **ubuntu** 사용자로 실행하거나 루트의 `/root/.my.cnf`도 별도 구성
+- **해결:** `/root/.my.cnf` 내에 ubuntu계정으로 접속
 
 ### 4) 보관 용량 증가
 
