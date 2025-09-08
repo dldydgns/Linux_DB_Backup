@@ -116,7 +116,7 @@ chmod 600 ~/.my.cnf
 
 ## 백업 스크립트
 
-**경로:** <a href="https://github.com/dldydgns/Linux_DB_Backup/blob/main/backup_company.sh">backup_company.sh</a>
+**파일:** <a href="https://github.com/dldydgns/Linux_DB_Backup/blob/main/backup_company.sh">backup_company.sh</a>
 
 ```bash
 chmod 750 ~/03.sh/03-1.mysql_dump_pjt/backup_company.sh
